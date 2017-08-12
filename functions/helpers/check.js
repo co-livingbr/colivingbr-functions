@@ -3,11 +3,10 @@
  * @param {*} value
  * @returns {Boolean}
  */
-const isEmpty = value => (
-	value === null ||
-	value === undefined ||
-	(typeof value === 'string' && !!value.trim())
-);
+const isEmpty = value => {
+	const isEmpty = value === null || value === undefined || (typeof value === 'string' && !value.trim());
+	return isEmpty;
+};
 
 exports.isEmpty = isEmpty;
 
@@ -17,6 +16,9 @@ exports.isEmpty = isEmpty;
  * @param {...String} properties
  * @returns {Boolean}
  */
-const checkProperties = (object, ...properties) => properties.every(property => !isEmpty(object[property]));
+const checkProperties = (object, ...properties) => {
+	const isValid = properties.every(property => !isEmpty(object[property]));
+	return isValid;
+};
 
 exports.checkProperties = checkProperties;

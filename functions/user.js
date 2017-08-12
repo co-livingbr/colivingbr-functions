@@ -1,14 +1,14 @@
 const app = require('./helpers/app');
-const cors = require('cors');
+const cors = require('cors')({ origin: true });
 const functions = require('firebase-functions');
-const { checkProperties } = require('./helpers/check');
+const { checkProperties, isEmpty } = require('./helpers/check');
 
 exports.signIn = functions.https.onRequest((req, res) =>
-	cors({ origin: true })((req, res) => {
+	cors(req, res, () => {
 		const isValid = checkProperties(req.body, 'email', 'password', 'name', 'picture');
 
 		if (!isValid) {
-			res.status(500).send('Invalid params');
+			res.status(500).send('Um parâmetro ou mais está inválido.');
 			return;
 		}
 
@@ -19,6 +19,7 @@ exports.signIn = functions.https.onRequest((req, res) =>
 			picture: req.body.picture
 		};
 
+		app.database().goOnline();
 		app.auth()
 			.createUser({
 				email: user.email,
@@ -31,10 +32,9 @@ exports.signIn = functions.https.onRequest((req, res) =>
 			.then(response => {
 				user.id = response.uid;
 
-				app.database().goOnline();
 				return app.database().ref('/users').child(response.uid).set(user);
 			})
 			.then(() => res.status(200).send('Usuário criado com sucesso!'))
-			.catch(error => res.status(500).send(error))
+			.catch(error => res.status(500).send(error.message));
 	})
 );

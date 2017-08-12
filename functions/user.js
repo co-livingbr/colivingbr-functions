@@ -3,7 +3,7 @@ const cors = require('cors')({ origin: true });
 const functions = require('firebase-functions');
 const { checkProperties, isEmpty } = require('./helpers/check');
 
-exports.signIn = functions.https.onRequest((req, res) =>
+exports.signUp = functions.https.onRequest((req, res) =>
 	cors(req, res, () => {
 		const isValid = checkProperties(req.body, 'email', 'password', 'name', 'picture');
 

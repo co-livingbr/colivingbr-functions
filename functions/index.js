@@ -1,9 +1,9 @@
 const account = require('./config/account.json');
 const functions = require('firebase-functions');
-const { initializeApp, credential } = require('firebase-admin');
+const admin = require('firebase-admin');
 
-const app = initializeApp({
-	credential: credential.cert(account),
+const app = admin.initializeApp({
+	credential: admin.credential.cert(account),
 	databaseURL: "https://colivingbr.firebaseio.com"
 });
 
@@ -14,7 +14,7 @@ const app = initializeApp({
 //  response.send("Hello from Firebase!");
 // });
 
-exports.updateProperties = functions.database.ref('/properties/{id}')
+exports.updateProperty = functions.database.ref('/properties/{id}')
 	.onUpdate(event => {
 		const id = event.params.id;
 		const property = event.data.val();
@@ -26,10 +26,10 @@ exports.updateProperties = functions.database.ref('/properties/{id}')
 		};
 
 		app.database().goOnline();
-		return app.database().ref('/properties-simplified').child(id).set(property);
+		return app.database().ref('/properties-simplified').child(id).set(simplified);
 	});
 
-exports.createProperties = functions.database.ref('/properties/{id}')
+exports.createProperty = functions.database.ref('/properties/{id}')
 	.onCreate(event => {
 		const id = event.params.id;
 		const property = event.data.val();
@@ -41,10 +41,10 @@ exports.createProperties = functions.database.ref('/properties/{id}')
 		};
 
 		app.database().goOnline();
-		return app.database().ref('/properties-simplified').child(id).set(property);
+		return app.database().ref('/properties-simplified').child(id).set(simplified);
 	});
 
-exports.updateProperties = functions.database.ref('/properties/{id}')
+exports.deleteProperty = functions.database.ref('/properties/{id}')
 	.onDelete(event => {
 		const id = event.params.id;
 

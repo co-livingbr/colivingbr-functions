@@ -3,12 +3,21 @@ const cors = require('cors')({ origin: true });
 const functions = require('firebase-functions');
 const { checkProperties, isEmpty } = require('./helpers/check');
 
+/**
+ * TODO: Customizar as mensagens de erro do Firebase.
+ */
+
 exports.signUp = functions.https.onRequest((req, res) =>
 	cors(req, res, () => {
-		const isValid = checkProperties(req.body, 'email', 'password', 'name', 'picture');
+		const isValid = checkProperties(req.body, 'email', 'password', 'name', 'picture', 'password_confirmation');
 
 		if (!isValid) {
-			res.status(500).send('Um parâmetro ou mais está inválido.');
+			res.status(500).send('Um parâmetro ou mais está vazio.');
+			return;
+		}
+
+		if (req.body.password !== req.body.password_confirmation) {
+			res.status(500).send('A senha e a confirmação da senha não coincidem.');
 			return;
 		}
 

@@ -1,4 +1,13 @@
 /**
+ * Check if a value is an object.
+ * @param {*} value
+ * @returns {Boolean}
+ */
+const isObject = value => value !== null && typeof value === 'object';
+
+exports.isObject = isObject;
+
+/**
  * Check if value is empty.
  * @param {*} value
  * @returns {Boolean}
@@ -17,7 +26,7 @@ exports.isEmpty = isEmpty;
  * @returns {Boolean}
  */
 const checkProperties = (object, ...properties) => {
-	const isValid = properties.every(property => !isEmpty(object[property]));
+	const isValid = isObject(object) && properties.every(property => !isEmpty(object[property]));
 	return isValid;
 };
 

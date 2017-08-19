@@ -28,7 +28,10 @@ exports.create = functions.database.ref('/properties/{id}')
 		};
 
 		app.database().goOnline();
-		return app.database().ref('/properties-simplified').child(id).set(simplified);
+		return Promise.all([
+			app.database().ref('/properties').child(id).set({ id }),
+			app.database().ref('/properties-simplified').child(id).set(simplified)
+		]);
 	});
 
 exports.delete = functions.database.ref('/properties/{id}')

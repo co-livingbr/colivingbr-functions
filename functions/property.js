@@ -1,4 +1,5 @@
-const app = require('./helpers/app');
+const { database } = require('./helpers/app');
+const { checkProperties } = require('./helpers/check');
 const functions = require('firebase-functions');
 
 exports.update = functions.database.ref('/properties/{id}')
@@ -12,8 +13,8 @@ exports.update = functions.database.ref('/properties/{id}')
 			image: property.images[0] // Possivelmente
 		};
 
-		app.database().goOnline();
-		return app.database().ref('/properties-simplified').child(id).set(simplified);
+		database().goOnline();
+		return database().ref('/properties-simplified').child(id).set(simplified);
 	});
 
 exports.create = functions.database.ref('/properties/{id}')
@@ -27,10 +28,10 @@ exports.create = functions.database.ref('/properties/{id}')
 			image: property.images[0] // Possivelmente
 		};
 
-		app.database().goOnline();
+		database().goOnline();
 		return Promise.all([
-			app.database().ref('/properties').child(id).set({ id }),
-			app.database().ref('/properties-simplified').child(id).set(simplified)
+			database().ref('/properties').child(id).set({ id }),
+			database().ref('/properties-simplified').child(id).set(simplified)
 		]);
 	});
 
@@ -38,6 +39,36 @@ exports.delete = functions.database.ref('/properties/{id}')
 	.onDelete(event => {
 		const id = event.params.id;
 
-		app.database().goOnline();
-		return app.database().ref('/properties-simplified').child(id).remove();
+		database().goOnline();
+		return database().ref('/properties-simplified').child(id).remove();
 	});
+
+exports.filter = functions.https.onRequest((req, res) => {
+	const filters = {
+		type: req.body.type,
+		location: req.body.location,
+		price: req.body.price
+	}
+
+	database().goOnline()
+
+	let query = database().ref('/properties-simplified')
+
+	if (filters.type)
+		query = query.equalTo('type', filters.type)
+
+	if (filters.price && filters.price[0] && filters.price[1]) {
+		query = query.orderByChild('price').startAt(filters.price[0]).endAt(filters.price[1])
+	}
+
+	query.once('value', snapshot => {
+		const properties = snapshot.val()
+
+		const results = !filters.location ? properties : Object.keys(properties)
+			.map(id => properties[id])
+			.filter(property => property.location.includes(filters.location))
+			.reduce((properties, property) => Object.assign({}, properties, { [property.id]: property }), {})
+
+		res.status(200).send(results)
+	})
+})
